@@ -43,7 +43,7 @@
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.2, 0.8, 0.3, 1);
+    /* transition is set inline for spin only — no default transition */
 }
 
 .dice-cube.landed {

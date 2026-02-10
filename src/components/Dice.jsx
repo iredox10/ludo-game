@@ -65,12 +65,18 @@ export default function Dice({ value, rolling, onRoll, disabled, playerColor }) 
     // The face to display — use lastValue to avoid flashing face 1
     const displayValue = value || lastValue;
 
-    // Compute cube transform
-    const cubeTransform = useMemo(() => {
+    // Compute cube style (transform + transition)
+    const cubeStyle = useMemo(() => {
         if (phase === 'spinning') {
-            return `rotateX(${spinDeg.x}deg) rotateY(${spinDeg.y}deg) rotateZ(${spinDeg.z}deg)`;
+            return {
+                transform: `rotateX(${spinDeg.x}deg) rotateY(${spinDeg.y}deg) rotateZ(${spinDeg.z}deg)`,
+                transition: 'transform 0.8s cubic-bezier(0.2, 0.8, 0.3, 1)',
+            };
         }
-        return faceRotations[displayValue] || faceRotations[1];
+        return {
+            transform: faceRotations[displayValue] || faceRotations[1],
+            transition: 'none',  // Snap instantly — no flash through face 1
+        };
     }, [phase, spinDeg, displayValue]);
 
     return (
@@ -85,7 +91,7 @@ export default function Dice({ value, rolling, onRoll, disabled, playerColor }) 
                 <div className="dice-scene">
                     <div
                         className={`dice-cube ${phase === 'landing' ? 'landed' : ''}`}
-                        style={{ transform: cubeTransform }}
+                        style={cubeStyle}
                     >
                         {/* Face 1 - Front */}
                         <DiceFace value={1} className="face-front" />
