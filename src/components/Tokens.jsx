@@ -33,7 +33,7 @@ function getTokenPosition(token, cellSize) {
     }
 
     // Active on main path
-    if (pathPosition >= 0 && pathPosition < 52) {
+    if (pathPosition >= 0 && pathPosition < 51) {
         const absIndex = getAbsoluteMainPathIndex(player, pathPosition);
         const [col, row] = MAIN_PATH[absIndex];
         return {
@@ -43,8 +43,8 @@ function getTokenPosition(token, cellSize) {
     }
 
     // In home stretch
-    if (pathPosition >= 52 && pathPosition < 58) {
-        const homeIndex = pathPosition - 52;
+    if (pathPosition >= 51 && pathPosition < 57) {
+        const homeIndex = pathPosition - 51;
         if (homeIndex < 6) {
             const [col, row] = HOME_PATHS[player][homeIndex];
             return {

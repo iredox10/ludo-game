@@ -21,7 +21,7 @@ export function createInitialTokens(playerCount) {
             player: playerId,
             index: i,
             state: TOKEN_STATE.HOME,
-            pathPosition: -1, // -1 = at home base, 0-51 = on main path relative to player start, 52-57 = home stretch
+            pathPosition: -1, // -1 = at home base, 0-50 = on main path relative to player start, 51-56 = home stretch
             mainPathIndex: -1, // Actual index on MAIN_PATH array
         }));
     });
@@ -49,8 +49,8 @@ export function rollDice() {
  * Get the absolute position on the main path given a player and their relative position
  */
 export function getAbsoluteMainPathIndex(player, relativePos) {
-    if (relativePos < 0 || relativePos >= 52) return -1;
-    return (START_POSITIONS[player] + relativePos) % 52;
+    if (relativePos < 0 || relativePos >= 51) return -1;
+    return (START_POSITIONS[player] + relativePos) % 51;
 }
 
 /**
@@ -76,7 +76,7 @@ export function getTokenCoordinates(token, cellSize) {
     }
 
     // Active on main path
-    if (pathPosition >= 0 && pathPosition < 52) {
+    if (pathPosition >= 0 && pathPosition < 51) {
         const absIndex = getAbsoluteMainPathIndex(player, pathPosition);
         const [col, row] = MAIN_PATH[absIndex];
         return {
@@ -86,8 +86,8 @@ export function getTokenCoordinates(token, cellSize) {
     }
 
     // In home stretch
-    if (pathPosition >= 52 && pathPosition < 58) {
-        const homeIndex = pathPosition - 52;
+    if (pathPosition >= 51 && pathPosition < 57) {
+        const homeIndex = pathPosition - 51;
         if (homeIndex < 6) {
             const [col, row] = HOME_PATHS[player][homeIndex];
             return {
@@ -115,7 +115,7 @@ export function canMoveToken(token, diceValue, allTokens) {
     const newPos = token.pathPosition + diceValue;
 
     // Can't overshoot home (position 57 = home, need exactly right number)
-    if (newPos > 57) return false;
+    if (newPos > 56) return false;
 
     return true;
 }
@@ -151,12 +151,12 @@ export function moveToken(token, diceValue, allTokens) {
     else if (tokenToMove.state === TOKEN_STATE.ACTIVE) {
         const newPos = tokenToMove.pathPosition + diceValue;
 
-        if (newPos === 57) {
+        if (newPos === 56) {
             // Reached home!
             tokenToMove.state = TOKEN_STATE.FINISHED;
-            tokenToMove.pathPosition = 57;
+            tokenToMove.pathPosition = 56;
             tokenToMove.mainPathIndex = -1;
-        } else if (newPos >= 52) {
+        } else if (newPos >= 51) {
             // In home stretch
             tokenToMove.pathPosition = newPos;
             tokenToMove.mainPathIndex = -1;
@@ -185,11 +185,11 @@ export function moveTokenOneStep(player, tokenIndex, allTokens) {
 
     const newPos = tokenToMove.pathPosition + 1;
 
-    if (newPos === 57) {
+    if (newPos === 56) {
         tokenToMove.state = TOKEN_STATE.FINISHED;
-        tokenToMove.pathPosition = 57;
+        tokenToMove.pathPosition = 56;
         tokenToMove.mainPathIndex = -1;
-    } else if (newPos >= 52) {
+    } else if (newPos >= 51) {
         tokenToMove.pathPosition = newPos;
         tokenToMove.mainPathIndex = -1;
     } else {
@@ -209,7 +209,7 @@ export function finalizeTokenMove(player, tokenIndex, allTokens) {
 
     let captured = null;
 
-    if (tokenToMove.state === TOKEN_STATE.ACTIVE && tokenToMove.pathPosition < 52) {
+    if (tokenToMove.state === TOKEN_STATE.ACTIVE && tokenToMove.pathPosition < 51) {
         captured = checkCapture(tokenToMove, newTokens);
     }
 

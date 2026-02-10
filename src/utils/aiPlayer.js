@@ -30,12 +30,12 @@ export function chooseBestToken(player, diceValue, allTokens) {
         const newPos = token.state === TOKEN_STATE.HOME ? 0 : token.pathPosition + diceValue;
 
         // 1. Can finish? Highest priority
-        if (newPos === 57) {
+        if (newPos === 56) {
             score += 1000;
         }
 
         // 2. Can capture? Simulate the move
-        if (token.state === TOKEN_STATE.ACTIVE && newPos < 52) {
+        if (token.state === TOKEN_STATE.ACTIVE && newPos < 51) {
             const { captured } = moveToken(token, diceValue, allTokens);
             if (captured) {
                 score += 800;
@@ -61,15 +61,15 @@ export function chooseBestToken(player, diceValue, allTokens) {
         }
 
         // 4. Land on a safe position
-        if (token.state === TOKEN_STATE.ACTIVE && newPos < 52) {
+        if (token.state === TOKEN_STATE.ACTIVE && newPos < 51) {
             const absNewPos = getAbsoluteMainPathIndex(player, newPos);
             if (SAFE_POSITIONS.includes(absNewPos)) {
                 score += 300;
             }
         }
 
-        // 5. Enter home stretch (positions 52-56) — safe from capture
-        if (token.state === TOKEN_STATE.ACTIVE && newPos >= 52 && newPos < 57) {
+        // 5. Enter home stretch (positions 51-55) — safe from capture
+        if (token.state === TOKEN_STATE.ACTIVE && newPos >= 51 && newPos < 56) {
             score += 350;
         }
 
@@ -79,7 +79,7 @@ export function chooseBestToken(player, diceValue, allTokens) {
         }
 
         // 7. Danger avoidance — penalize landing near opponent tokens
-        if (token.state === TOKEN_STATE.ACTIVE && newPos < 52) {
+        if (token.state === TOKEN_STATE.ACTIVE && newPos < 51) {
             const absNewPos = getAbsoluteMainPathIndex(player, newPos);
             if (!SAFE_POSITIONS.includes(absNewPos)) {
                 const dangerScore = calculateDanger(player, absNewPos, allTokens);
@@ -88,7 +88,7 @@ export function chooseBestToken(player, diceValue, allTokens) {
         }
 
         // 8. Escape danger — bonus for moving away from a currently dangerous position
-        if (token.state === TOKEN_STATE.ACTIVE && token.pathPosition < 52) {
+        if (token.state === TOKEN_STATE.ACTIVE && token.pathPosition < 51) {
             const currentAbsPos = getAbsoluteMainPathIndex(player, token.pathPosition);
             if (!SAFE_POSITIONS.includes(currentAbsPos)) {
                 const currentDanger = calculateDanger(player, currentAbsPos, allTokens);
@@ -139,7 +139,7 @@ function calculateDanger(player, absPosition, allTokens) {
             // Check if opponent can reach this position in 1-6 steps
             for (let dice = 1; dice <= 6; dice++) {
                 const opponentNewPos = token.pathPosition + dice;
-                if (opponentNewPos >= 52) continue;
+                if (opponentNewPos >= 51) continue;
 
                 const opponentAbsPos = getAbsoluteMainPathIndex(pid, opponentNewPos);
                 if (opponentAbsPos === absPosition) {

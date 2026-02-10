@@ -20,7 +20,7 @@ export const BOARD_SIZE = 15;
 export const CELL_SIZE = 40;
 export const BOARD_PX = BOARD_SIZE * CELL_SIZE;
 
-// The main path around the board (52 cells, 0-indexed)
+// The main path around the board (51 cells, 0-indexed)
 // Each entry is [col, row] on the 15x15 grid
 export const MAIN_PATH = [
     // Bottom-left going up (Red's start column)
@@ -46,7 +46,7 @@ export const MAIN_PATH = [
     // Turn left
     [5, 8], [4, 8], [3, 8], [2, 8], [1, 8], [0, 8],
     // Turn up
-    [0, 7], [0, 6],
+    [0, 7],
 ];
 
 // Home stretch paths (the colored columns leading to center)
@@ -61,22 +61,22 @@ export const HOME_PATHS = {
 export const START_POSITIONS = {
     0: 0,   // Red starts at index 0
     1: 13,  // Green starts at index 13
-    2: 26,  // Yellow starts at index 26
-    3: 39,  // Blue starts at index 39
+    2: 25,  // Yellow starts at index 25
+    3: 38,  // Blue starts at index 38
 };
 
 // Where each player turns into home stretch (index in MAIN_PATH)
 // The cell BEFORE the home entry
 export const HOME_ENTRY = {
     0: 50,  // Red enters home after index 50
-    1: 11,  // Green enters home after index 11
+    1: 12,  // Green enters home after index 12
     2: 24,  // Yellow enters home after index 24
     3: 37,  // Blue enters home after index 37
 };
 
 // Safe positions on the main path (cannot be captured here)
 // Stars positions (indices in MAIN_PATH)
-export const SAFE_POSITIONS = [0, 8, 13, 21, 26, 34, 39, 47];
+export const SAFE_POSITIONS = [0, 8, 13, 21, 25, 33, 38, 46];
 
 // Home base token positions (where tokens sit before entering the board)
 export const HOME_BASE_POSITIONS = {
@@ -94,4 +94,4 @@ export const TOKEN_STATE = {
 };
 
 // Number of steps to complete the circuit + home path
-export const TOTAL_STEPS = 57; // 52 around + 5 in home stretch + final home cell
+export const TOTAL_STEPS = 56; // 51 around + 5 in home stretch + final home cell
