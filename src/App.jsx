@@ -7,6 +7,7 @@ import Tokens from './components/Tokens';
 import Dice from './components/Dice';
 import PlayerPanel from './components/PlayerPanel';
 import WinnerModal from './components/WinnerModal';
+import PWAPrompt from './components/PWAPrompt';
 import './App.css';
 
 function App() {
@@ -63,11 +64,14 @@ function App() {
   // Setup screen
   if (phase === GAME_PHASES.SETUP) {
     return (
-      <StartScreen
-        playerCount={playerCount}
-        onPlayerCountChange={actions.setPlayerCount}
-        onStart={actions.startGame}
-      />
+      <>
+        <StartScreen
+          playerCount={playerCount}
+          onPlayerCountChange={actions.setPlayerCount}
+          onStart={actions.startGame}
+        />
+        <PWAPrompt />
+      </>
     );
   }
 
@@ -135,6 +139,9 @@ function App() {
 
       {/* Winner Modal */}
       <WinnerModal winner={winner} onPlayAgain={actions.resetGame} />
+
+      {/* PWA Install/Offline Prompt */}
+      <PWAPrompt />
     </div>
   );
 }
