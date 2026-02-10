@@ -1,0 +1,102 @@
+.ludo-board {
+  position: relative;
+  background: #f5f0e8;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.3),
+    0 0 0 3px rgba(255, 255, 255, 0.1),
+    inset 0 0 80px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+/* ---- Board Cells ---- */
+.board-cell {
+  position: absolute;
+  box-sizing: border-box;
+  border: 0.5px solid rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease;
+}
+
+/* Path cells */
+.path-cell {
+  background: #ffffff;
+  border: 0.5px solid rgba(0, 0, 0, 0.12);
+}
+
+.path-cell:hover {
+  background: #f0f0f0;
+}
+
+/* Safe/Star cells */
+.safe-cell {
+  background: #ffffff;
+}
+
+.star {
+  font-size: 16px;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  opacity: 0.6;
+}
+
+.start-star {
+  opacity: 1;
+  font-size: 18px;
+}
+
+/* Player-colored cells */
+.board-cell.player-0 .start-star { color: #E53935; }
+.board-cell.player-1 .start-star { color: #43A047; }
+.board-cell.player-2 .start-star { color: #FDD835; }
+.board-cell.player-3 .start-star { color: #1E88E5; }
+
+.start-cell.player-0 { background: #FFCDD2; }
+.start-cell.player-1 { background: #C8E6C9; }
+.start-cell.player-2 { background: #FFF9C4; }
+.start-cell.player-3 { background: #BBDEFB; }
+
+/* Yard areas */
+.yard.player-0,
+.yard-border.player-0 { background: #E53935; }
+.yard.player-1,
+.yard-border.player-1 { background: #43A047; }
+.yard.player-2,
+.yard-border.player-2 { background: #FDD835; }
+.yard.player-3,
+.yard-border.player-3 { background: #1E88E5; }
+
+.yard.yard-inner.player-0 { background: #FFCDD2; }
+.yard.yard-inner.player-1 { background: #C8E6C9; }
+.yard.yard-inner.player-2 { background: #FFF9C4; }
+.yard.yard-inner.player-3 { background: #BBDEFB; }
+
+.yard.inactive,
+.yard-border.inactive {
+  filter: grayscale(0.5) brightness(0.8);
+  opacity: 0.6;
+}
+
+/* Home stretch */
+.home-stretch.player-0 { background: #FFCDD2; border-color: rgba(229, 57, 53, 0.2); }
+.home-stretch.player-1 { background: #C8E6C9; border-color: rgba(67, 160, 71, 0.2); }
+.home-stretch.player-2 { background: #FFF9C4; border-color: rgba(253, 216, 53, 0.2); }
+.home-stretch.player-3 { background: #BBDEFB; border-color: rgba(30, 136, 229, 0.2); }
+
+/* Center cell */
+.center-cell {
+  background: transparent;
+  border: none;
+}
+
+/* Home base circles */
+.home-base-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1;
+}
