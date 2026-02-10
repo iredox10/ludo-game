@@ -108,25 +108,28 @@ export default function Tokens({
         return list;
     }, [tokens]);
 
+    // Pawn is taller than wide
+    const pawnWidth = cellSize * 0.6;
+    const pawnHeight = cellSize * 0.82;
+
     return (
         <div className="tokens-layer" style={{ width: 15 * cellSize, height: 15 * cellSize }}>
             {allTokensList.map((token) => {
                 const pos = getTokenPosition(token, cellSize);
                 const offset = getStackOffset(token, tokens, cellSize);
                 const isMoveable = moveableTokens.includes(token.id);
-                const isCurrentPlayer = token.player === currentPlayer;
                 const colors = PLAYER_COLORS[token.player];
-                const tokenSize = cellSize * 0.65;
 
                 return (
                     <div
                         key={token.id}
                         className={`token player-${token.player} ${isMoveable ? 'moveable' : ''} ${token.state === TOKEN_STATE.FINISHED ? 'finished' : ''}`}
                         style={{
-                            left: pos.x + offset.dx - tokenSize / 2,
-                            top: pos.y + offset.dy - tokenSize / 2,
-                            width: tokenSize,
-                            height: tokenSize,
+                            left: pos.x + offset.dx - pawnWidth / 2,
+                            // Shift up slightly so the base sits on the cell center
+                            top: pos.y + offset.dy - pawnHeight * 0.6,
+                            width: pawnWidth,
+                            height: pawnHeight,
                             '--token-color': colors.main,
                             '--token-light': colors.light,
                             '--token-dark': colors.dark,
@@ -137,9 +140,15 @@ export default function Tokens({
                         onClick={() => isMoveable && onTokenClick(token.id)}
                         title={isMoveable ? 'Click to move this token' : ''}
                     >
-                        <div className="token-inner">
-                            <div className="token-shine" />
+                        {/* 3D Pawn: head → body → base */}
+                        <div className="pawn">
+                            <div className="pawn-head">
+                                <div className="pawn-shine" />
+                            </div>
+                            <div className="pawn-body" />
+                            <div className="pawn-base" />
                         </div>
+                        <div className="pawn-shadow" />
                     </div>
                 );
             })}

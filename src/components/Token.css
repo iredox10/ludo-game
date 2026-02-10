@@ -5,82 +5,160 @@
     pointer-events: none;
 }
 
+/* === Token wrapper === */
 .token {
     position: absolute;
-    border-radius: 50%;
     pointer-events: auto;
     transition: left 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
         top 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-        transform 0.2s ease,
-        box-shadow 0.3s ease;
+        transform 0.2s ease;
     z-index: 5;
 }
 
-.token-inner {
+/* === Pawn container === */
+.pawn {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle at 35% 35%, var(--token-light), var(--token-color) 50%, var(--token-dark));
-    box-shadow:
-        0 3px 8px rgba(0, 0, 0, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.2),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     position: relative;
-    overflow: hidden;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
-.token-shine {
+/* === Head — glossy sphere === */
+.pawn-head {
+    width: 52%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at 38% 32%, rgba(255, 255, 255, 0.5) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, var(--token-light) 0%, var(--token-color) 45%, var(--token-dark) 100%);
+    position: relative;
+    z-index: 3;
+    flex-shrink: 0;
+    box-shadow:
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Specular highlight on head */
+.pawn-shine {
+    position: absolute;
+    top: 12%;
+    left: 18%;
+    width: 38%;
+    height: 28%;
+    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.75), transparent);
+    border-radius: 50%;
+    transform: rotate(-15deg);
+}
+
+/* === Body — tapered between head and base === */
+.pawn-body {
+    width: 40%;
+    flex: 1;
+    background: linear-gradient(180deg,
+            var(--token-color) 0%,
+            var(--token-dark) 100%);
+    /* Tapered shape: narrow at top, wider at bottom */
+    clip-path: polygon(15% 0%, 85% 0%, 100% 100%, 0% 100%);
+    position: relative;
+    z-index: 2;
+    margin-top: -6%;
+    min-height: 20%;
+}
+
+/* Highlight stripe on body */
+.pawn-body::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 30%;
+    width: 20%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+}
+
+/* === Base — wide flat disk === */
+.pawn-base {
+    width: 88%;
+    height: 18%;
+    background: linear-gradient(180deg,
+            var(--token-dark) 0%,
+            var(--token-color) 40%,
+            var(--token-dark) 100%);
+    border-radius: 50%;
+    position: relative;
+    z-index: 1;
+    margin-top: -4%;
+    box-shadow:
+        inset 0 -2px 3px rgba(0, 0, 0, 0.25),
+        inset 0 1px 2px rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+}
+
+/* Base top rim highlight */
+.pawn-base::before {
+    content: '';
     position: absolute;
     top: 15%;
-    left: 20%;
-    width: 35%;
-    height: 25%;
-    background: radial-gradient(ellipse, rgba(255, 255, 255, 0.7), transparent);
+    left: 15%;
+    width: 70%;
+    height: 30%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), transparent);
     border-radius: 50%;
-    transform: rotate(-30deg);
 }
 
-/* Moveable token pulse */
+/* === Ground shadow === */
+.pawn-shadow {
+    position: absolute;
+    bottom: -6%;
+    left: 12%;
+    width: 76%;
+    height: 14%;
+    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.3), transparent 70%);
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* === Moveable glow + bounce === */
 .token.moveable {
-    animation: tokenPulse 1s ease-in-out infinite;
+    animation: pawnBounce 1s ease-in-out infinite;
     z-index: 10 !important;
 }
 
-.token.moveable .token-inner {
-    box-shadow:
-        0 0 20px var(--token-glow),
-        0 3px 8px rgba(0, 0, 0, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.2),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+.token.moveable .pawn {
+    filter: drop-shadow(0 0 8px var(--token-glow)) drop-shadow(0 0 4px var(--token-glow)) drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
 }
 
 .token.moveable:hover {
-    transform: scale(1.3);
+    transform: scale(1.25);
 }
 
-.token.moveable:hover .token-inner {
-    box-shadow:
-        0 0 30px var(--token-glow),
-        0 5px 15px rgba(0, 0, 0, 0.4),
-        inset 0 -2px 4px rgba(0, 0, 0, 0.2),
-        inset 0 2px 4px rgba(255, 255, 255, 0.3);
+.token.moveable:hover .pawn {
+    filter: drop-shadow(0 0 14px var(--token-glow)) drop-shadow(0 0 7px var(--token-glow)) drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
 }
 
+/* === Finished = smaller + dimmed === */
 .token.finished {
-    opacity: 0.8;
-    transform: scale(0.8);
+    opacity: 0.75;
+    transform: scale(0.7);
 }
 
-@keyframes tokenPulse {
+.token.finished .pawn {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* === Animation === */
+@keyframes pawnBounce {
 
     0%,
     100% {
-        transform: scale(1);
+        transform: translateY(0) scale(1);
     }
 
     50% {
-        transform: scale(1.15);
+        transform: translateY(-3px) scale(1.08);
     }
 }
