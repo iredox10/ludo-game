@@ -9,6 +9,8 @@ import {
     rollDice,
     canAnyTokenMove,
     moveToken,
+    moveTokenOneStep,
+    finalizeTokenMove,
     checkWinner,
     getNextPlayer,
     getMoveableTokens,
@@ -40,6 +42,7 @@ const GAME_PHASES = {
 
 const AI_ROLL_DELAY = 1000;    // ms before AI rolls
 const AI_SELECT_DELAY = 800;   // ms before AI picks a token
+const STEP_DELAY = 120;        // ms between each hop in step animation
 
 let soundEventCounter = 0;
 function makeSoundEvent(type) {
@@ -60,6 +63,8 @@ const initialState = {
     winner: null,
     consecutiveSixes: 0,
     moveHistory: [],
+    // Animation state for step-by-step movement
+    _animation: null, // { player, tokenIndex, stepsLeft, wasAtHome, tokenId }
     // Sound event flags (consumed by useEffect)
     _soundEvent: null,
 };
@@ -180,28 +185,92 @@ function gameReducer(state, action) {
 
         case 'SELECT_TOKEN': {
             const { tokenId } = action.payload;
-            const { currentPlayer, diceValue, tokens, playerIds, consecutiveSixes, cpuPlayers } = state;
+            const { currentPlayer, diceValue, tokens } = state;
 
             // Find the token
             const playerTokens = tokens[currentPlayer];
             const token = playerTokens.find((t) => t.id === tokenId);
             if (!token) return state;
 
-            // Determine sound event based on what kind of move this is
             const wasAtHome = token.state === TOKEN_STATE.HOME;
 
-            // Move the token
-            const { tokens: newTokens, captured } = moveToken(token, diceValue, tokens);
+            // If token is leaving home, move instantly (just 1 step to start pos)
+            if (wasAtHome && diceValue === 6) {
+                const { tokens: newTokens, captured } = moveToken(token, diceValue, tokens);
+                // Go straight to FINISH_MOVE logic via a new dispatch
+                return {
+                    ...state,
+                    tokens: newTokens,
+                    phase: GAME_PHASES.MOVING,
+                    moveableTokens: [],
+                    _animation: {
+                        player: currentPlayer,
+                        tokenIndex: token.index,
+                        tokenId,
+                        stepsLeft: 0, // 0 steps left = immediately finalize
+                        wasAtHome: true,
+                    },
+                    _soundEvent: makeSoundEvent('tokenOut'),
+                };
+            }
+
+            // Active token: animate step-by-step
+            return {
+                ...state,
+                phase: GAME_PHASES.MOVING,
+                moveableTokens: [],
+                _animation: {
+                    player: currentPlayer,
+                    tokenIndex: token.index,
+                    tokenId,
+                    stepsLeft: diceValue,
+                    wasAtHome: false,
+                },
+                message: 'Moving...',
+            };
+        }
+
+        // Step token forward by 1 cell (called by animation useEffect)
+        case 'ANIMATE_STEP': {
+            const anim = state._animation;
+            if (!anim || anim.stepsLeft <= 0) return state;
+
+            const { tokens: newTokens } = moveTokenOneStep(
+                anim.player, anim.tokenIndex, state.tokens
+            );
+
+            return {
+                ...state,
+                tokens: newTokens,
+                _animation: {
+                    ...anim,
+                    stepsLeft: anim.stepsLeft - 1,
+                },
+                _soundEvent: makeSoundEvent('tokenStep'),
+            };
+        }
+
+        // Called after step animation finishes — handle captures, win, turn
+        case 'FINISH_MOVE': {
+            const anim = state._animation;
+            if (!anim) return state;
+
+            const { currentPlayer, diceValue, playerIds, consecutiveSixes, cpuPlayers, tokens } = state;
+
+            // Check captures at final position
+            const { tokens: newTokens, captured } = finalizeTokenMove(
+                anim.player, anim.tokenIndex, tokens
+            );
 
             // Check if this token just finished
-            const movedToken = newTokens[currentPlayer].find((t) => t.id === tokenId);
+            const movedToken = newTokens[currentPlayer].find((t) => t.id === anim.tokenId);
             const justFinished = movedToken && movedToken.state === TOKEN_STATE.FINISHED;
 
             // Determine sound
             let soundEvent = 'tokenMove';
             if (captured) soundEvent = 'capture';
             else if (justFinished) soundEvent = 'tokenHome';
-            else if (wasAtHome) soundEvent = 'tokenOut';
+            else if (anim.wasAtHome) soundEvent = 'tokenOut';
 
             // Check for winner
             if (checkWinner(currentPlayer, newTokens)) {
@@ -212,6 +281,7 @@ function gameReducer(state, action) {
                     phase: GAME_PHASES.GAME_OVER,
                     winner: currentPlayer,
                     moveableTokens: [],
+                    _animation: null,
                     message: `${PLAYER_NAMES[currentPlayer]}${isCpu ? ' (CPU)' : ''} wins! 🎉`,
                     _soundEvent: makeSoundEvent('win'),
                 };
@@ -230,6 +300,7 @@ function gameReducer(state, action) {
                 currentPlayer: nextPlayer,
                 diceValue: isExtraTurn ? diceValue : null,
                 moveableTokens: [],
+                _animation: null,
                 consecutiveSixes: isExtraTurn ? consecutiveSixes : 0,
                 message: isExtraTurn
                     ? `${captured ? 'Capture! ' : ''}Bonus turn for ${nextLabel}! ${nextIsCpu ? 'Thinking...' : 'Roll again.'}`
@@ -337,6 +408,29 @@ export function useGameState() {
         handleRollDice,
     ]);
 
+    // === Step-by-step animation driver ===
+    const animTimerRef = useRef(null);
+    useEffect(() => {
+        const anim = state._animation;
+        if (!anim) return;
+
+        if (anim.stepsLeft > 0) {
+            // More steps to go — dispatch next step after delay
+            animTimerRef.current = setTimeout(() => {
+                dispatch({ type: 'ANIMATE_STEP' });
+            }, STEP_DELAY);
+        } else {
+            // Animation done — finalize the move after a tiny pause
+            animTimerRef.current = setTimeout(() => {
+                dispatch({ type: 'FINISH_MOVE' });
+            }, STEP_DELAY);
+        }
+
+        return () => {
+            if (animTimerRef.current) clearTimeout(animTimerRef.current);
+        };
+    }, [state._animation]);
+
     // === Sound Effect Handler ===
     const lastSoundIdRef = useRef(0);
     useEffect(() => {
@@ -357,6 +451,9 @@ export function useGameState() {
                 setTimeout(playNoMoves, 200);
                 break;
             case 'tokenMove':
+                playTokenMove();
+                break;
+            case 'tokenStep':
                 playTokenMove();
                 break;
             case 'tokenOut':

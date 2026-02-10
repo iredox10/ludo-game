@@ -174,6 +174,49 @@ export function moveToken(token, diceValue, allTokens) {
 }
 
 /**
+ * Move a token forward by exactly 1 step (for animation).
+ * Does NOT check captures — that's done on the final step.
+ */
+export function moveTokenOneStep(player, tokenIndex, allTokens) {
+    const newTokens = JSON.parse(JSON.stringify(allTokens));
+    const tokenToMove = newTokens[player][tokenIndex];
+
+    if (tokenToMove.state !== TOKEN_STATE.ACTIVE) return { tokens: newTokens };
+
+    const newPos = tokenToMove.pathPosition + 1;
+
+    if (newPos === 57) {
+        tokenToMove.state = TOKEN_STATE.FINISHED;
+        tokenToMove.pathPosition = 57;
+        tokenToMove.mainPathIndex = -1;
+    } else if (newPos >= 52) {
+        tokenToMove.pathPosition = newPos;
+        tokenToMove.mainPathIndex = -1;
+    } else {
+        tokenToMove.pathPosition = newPos;
+        tokenToMove.mainPathIndex = getAbsoluteMainPathIndex(player, newPos);
+    }
+
+    return { tokens: newTokens };
+}
+
+/**
+ * Check for capture at the token's current position (called after animation ends).
+ */
+export function finalizeTokenMove(player, tokenIndex, allTokens) {
+    const newTokens = JSON.parse(JSON.stringify(allTokens));
+    const tokenToMove = newTokens[player][tokenIndex];
+
+    let captured = null;
+
+    if (tokenToMove.state === TOKEN_STATE.ACTIVE && tokenToMove.pathPosition < 52) {
+        captured = checkCapture(tokenToMove, newTokens);
+    }
+
+    return { tokens: newTokens, captured };
+}
+
+/**
  * Check if the moved token captures an opponent's token
  */
 function checkCapture(movedToken, allTokens) {
