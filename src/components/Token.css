@@ -23,12 +23,12 @@
     flex-direction: column;
     align-items: center;
     position: relative;
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4));
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
 }
 
 /* === Head — glossy sphere === */
 .pawn-head {
-    width: 52%;
+    width: 58%;
     aspect-ratio: 1;
     border-radius: 50%;
     background:
@@ -55,7 +55,7 @@
 
 /* === Body — tapered between head and base === */
 .pawn-body {
-    width: 40%;
+    width: 48%;
     flex: 1;
     background: linear-gradient(180deg,
             var(--token-color) 0%,
@@ -81,8 +81,8 @@
 
 /* === Base — wide flat disk === */
 .pawn-base {
-    width: 88%;
-    height: 18%;
+    width: 92%;
+    height: 20%;
     background: linear-gradient(180deg,
             var(--token-dark) 0%,
             var(--token-color) 40%,

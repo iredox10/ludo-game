@@ -108,9 +108,9 @@ export default function Tokens({
         return list;
     }, [tokens]);
 
-    // Pawn is taller than wide
-    const pawnWidth = cellSize * 0.6;
-    const pawnHeight = cellSize * 0.82;
+    // Pawn is taller than wide — sized big and bold
+    const pawnWidth = cellSize * 0.78;
+    const pawnHeight = cellSize * 1.0;
 
     return (
         <div className="tokens-layer" style={{ width: 15 * cellSize, height: 15 * cellSize }}>
