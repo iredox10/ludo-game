@@ -14,6 +14,21 @@ import {
     getMoveableTokens,
 } from '../utils/gameLogic';
 import { chooseBestToken } from '../utils/aiPlayer';
+import {
+    playDiceRoll,
+    playDiceLand,
+    playTokenMove,
+    playTokenOut,
+    playCapture,
+    playTokenHome,
+    playWin,
+    playNoMoves,
+    playSix,
+    playTurnChange,
+    playClick,
+    toggleMute,
+    isSoundMuted,
+} from '../utils/sounds';
 
 const GAME_PHASES = {
     SETUP: 'setup',
@@ -25,6 +40,11 @@ const GAME_PHASES = {
 
 const AI_ROLL_DELAY = 1000;    // ms before AI rolls
 const AI_SELECT_DELAY = 800;   // ms before AI picks a token
+
+let soundEventCounter = 0;
+function makeSoundEvent(type) {
+    return { type, id: ++soundEventCounter };
+}
 
 const initialState = {
     phase: GAME_PHASES.SETUP,
@@ -40,6 +60,8 @@ const initialState = {
     winner: null,
     consecutiveSixes: 0,
     moveHistory: [],
+    // Sound event flags (consumed by useEffect)
+    _soundEvent: null,
 };
 
 function gameReducer(state, action) {
@@ -115,6 +137,7 @@ function gameReducer(state, action) {
                     consecutiveSixes: 0,
                     moveableTokens: [],
                     message: `Three 6s in a row! Turn lost. ${nextLabel}'s turn.`,
+                    _soundEvent: makeSoundEvent('noMoves'),
                 };
             }
 
@@ -135,6 +158,7 @@ function gameReducer(state, action) {
                     consecutiveSixes: 0,
                     moveableTokens: [],
                     message: `${playerLabel} rolled ${value} — no moves. ${nextLabel}'s turn.`,
+                    _soundEvent: makeSoundEvent('noMoves'),
                 };
             }
 
@@ -150,6 +174,7 @@ function gameReducer(state, action) {
                     : moveable.length === 1
                         ? `Rolled ${value}! Click your token to move.`
                         : `Rolled ${value}! Choose a token to move.`,
+                _soundEvent: value === 6 ? makeSoundEvent('six') : makeSoundEvent('diceLand'),
             };
         }
 
@@ -162,8 +187,21 @@ function gameReducer(state, action) {
             const token = playerTokens.find((t) => t.id === tokenId);
             if (!token) return state;
 
+            // Determine sound event based on what kind of move this is
+            const wasAtHome = token.state === TOKEN_STATE.HOME;
+
             // Move the token
             const { tokens: newTokens, captured } = moveToken(token, diceValue, tokens);
+
+            // Check if this token just finished
+            const movedToken = newTokens[currentPlayer].find((t) => t.id === tokenId);
+            const justFinished = movedToken && movedToken.state === TOKEN_STATE.FINISHED;
+
+            // Determine sound
+            let soundEvent = 'tokenMove';
+            if (captured) soundEvent = 'capture';
+            else if (justFinished) soundEvent = 'tokenHome';
+            else if (wasAtHome) soundEvent = 'tokenOut';
 
             // Check for winner
             if (checkWinner(currentPlayer, newTokens)) {
@@ -175,6 +213,7 @@ function gameReducer(state, action) {
                     winner: currentPlayer,
                     moveableTokens: [],
                     message: `${PLAYER_NAMES[currentPlayer]}${isCpu ? ' (CPU)' : ''} wins! 🎉`,
+                    _soundEvent: makeSoundEvent('win'),
                 };
             }
 
@@ -195,6 +234,7 @@ function gameReducer(state, action) {
                 message: isExtraTurn
                     ? `${captured ? 'Capture! ' : ''}Bonus turn for ${nextLabel}! ${nextIsCpu ? 'Thinking...' : 'Roll again.'}`
                     : `${captured ? 'Capture! ' : ''}${nextLabel}'s turn.${nextIsCpu ? '' : ''}`,
+                _soundEvent: makeSoundEvent(soundEvent),
             };
         }
 
@@ -233,6 +273,7 @@ export function useGameState() {
         if (state.phase !== GAME_PHASES.ROLLING || state.diceRolling) return;
 
         dispatch({ type: 'DICE_ROLLING' });
+        playDiceRoll();
 
         rollTimeoutRef.current = setTimeout(() => {
             const value = rollDice();
@@ -296,9 +337,63 @@ export function useGameState() {
         handleRollDice,
     ]);
 
+    // === Sound Effect Handler ===
+    const lastSoundIdRef = useRef(0);
+    useEffect(() => {
+        const ev = state._soundEvent;
+        if (!ev || ev.id === lastSoundIdRef.current) return;
+        lastSoundIdRef.current = ev.id;
+
+        switch (ev.type) {
+            case 'diceLand':
+                playDiceLand(state.diceValue);
+                break;
+            case 'six':
+                playDiceLand(6);
+                setTimeout(playSix, 150);
+                break;
+            case 'noMoves':
+                playDiceLand(state.diceValue);
+                setTimeout(playNoMoves, 200);
+                break;
+            case 'tokenMove':
+                playTokenMove();
+                break;
+            case 'tokenOut':
+                playTokenOut();
+                break;
+            case 'capture':
+                playCapture();
+                break;
+            case 'tokenHome':
+                playTokenHome();
+                break;
+            case 'win':
+                playTokenHome();
+                setTimeout(playWin, 500);
+                break;
+            default:
+                break;
+        }
+    }, [state._soundEvent, state.diceValue]);
+
+    // Play turn change sound when player changes
+    const prevPlayerRef = useRef(state.currentPlayer);
+    useEffect(() => {
+        if (state.phase !== GAME_PHASES.SETUP && state.currentPlayer !== prevPlayerRef.current) {
+            prevPlayerRef.current = state.currentPlayer;
+            playTurnChange();
+        }
+    }, [state.currentPlayer, state.phase]);
+
+    const handleToggleMute = useCallback(() => {
+        return toggleMute();
+    }, []);
+
     return {
         state,
         isCurrentPlayerCPU,
+        isMuted: isSoundMuted(),
         actions: {
             setPlayerCount,
             setCpuPlayers,
@@ -307,6 +402,7 @@ export function useGameState() {
             handleRollDice,
             selectToken,
             resetGame,
+            toggleMute: handleToggleMute,
         },
         GAME_PHASES,
     };

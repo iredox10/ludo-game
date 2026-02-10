@@ -11,7 +11,8 @@ import PWAPrompt from './components/PWAPrompt';
 import './App.css';
 
 function App() {
-  const { state, isCurrentPlayerCPU, actions, GAME_PHASES } = useGameState();
+  const { state, isCurrentPlayerCPU, isMuted: initialMuted, actions, GAME_PHASES } = useGameState();
+  const [muted, setMuted] = useState(false);
   const {
     phase,
     playerCount,
@@ -105,14 +106,27 @@ function App() {
             {isCurrentPlayerCPU && ' 🤖'}
           </span>
         </div>
-        <button
-          className="reset-btn"
-          onClick={actions.resetGame}
-          id="reset-btn"
-          title="New Game"
-        >
-          ✕
-        </button>
+        <div className="header-actions">
+          <button
+            className="mute-btn"
+            onClick={() => {
+              const newMuted = actions.toggleMute();
+              setMuted(newMuted);
+            }}
+            id="mute-btn"
+            title={muted ? 'Unmute Sounds' : 'Mute Sounds'}
+          >
+            {muted ? '🔇' : '🔊'}
+          </button>
+          <button
+            className="reset-btn"
+            onClick={actions.resetGame}
+            id="reset-btn"
+            title="New Game"
+          >
+            ✕
+          </button>
+        </div>
       </header>
 
       {/* Player Info */}
