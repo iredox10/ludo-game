@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { PLAYER_COLORS, PLAYER_NAMES } from './utils/constants';
 import { useGameState } from './hooks/useGameState';
 import StartScreen from './components/StartScreen';
@@ -11,11 +11,12 @@ import PWAPrompt from './components/PWAPrompt';
 import './App.css';
 
 function App() {
-  const { state, actions, GAME_PHASES } = useGameState();
+  const { state, isCurrentPlayerCPU, actions, GAME_PHASES } = useGameState();
   const {
     phase,
     playerCount,
     playerIds,
+    cpuPlayers,
     tokens,
     currentPlayer,
     diceValue,
@@ -42,22 +43,29 @@ function App() {
 
   const handleTokenClick = useCallback(
     (tokenId) => {
+      // Don't allow clicking tokens during CPU turn
+      if (isCurrentPlayerCPU) return;
       actions.selectToken(tokenId);
     },
-    [actions]
+    [actions, isCurrentPlayerCPU]
   );
 
-  // Keyboard shortcut - space to roll
+  // Keyboard shortcut - space to roll (only for human players)
   useEffect(() => {
     function handleKeyDown(e) {
-      if (e.code === 'Space' && phase === GAME_PHASES.ROLLING && !diceRolling) {
+      if (
+        e.code === 'Space' &&
+        phase === GAME_PHASES.ROLLING &&
+        !diceRolling &&
+        !isCurrentPlayerCPU
+      ) {
         e.preventDefault();
         actions.handleRollDice();
       }
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [phase, diceRolling, actions, GAME_PHASES]);
+  }, [phase, diceRolling, isCurrentPlayerCPU, actions, GAME_PHASES]);
 
   const currentPlayerColor = PLAYER_COLORS[currentPlayer]?.main || '#E53935';
 
@@ -67,13 +75,18 @@ function App() {
       <>
         <StartScreen
           playerCount={playerCount}
+          cpuPlayers={cpuPlayers}
           onPlayerCountChange={actions.setPlayerCount}
+          onToggleCpu={actions.toggleCpuPlayer}
           onStart={actions.startGame}
         />
         <PWAPrompt />
       </>
     );
   }
+
+  // Determine if dice should be disabled
+  const isDiceDisabled = phase !== GAME_PHASES.ROLLING || isCurrentPlayerCPU;
 
   return (
     <div className="game-screen">
@@ -87,7 +100,10 @@ function App() {
           style={{ '--turn-color': currentPlayerColor }}
         >
           <span className="turn-dot" style={{ background: currentPlayerColor }} />
-          <span className="turn-text">{PLAYER_NAMES[currentPlayer]}'s Turn</span>
+          <span className="turn-text">
+            {PLAYER_NAMES[currentPlayer]}'s Turn
+            {isCurrentPlayerCPU && ' 🤖'}
+          </span>
         </div>
         <button
           className="reset-btn"
@@ -104,6 +120,7 @@ function App() {
         players={playerIds}
         tokens={tokens}
         currentPlayer={currentPlayer}
+        cpuPlayers={cpuPlayers}
       />
 
       {/* Board + Tokens */}
@@ -116,7 +133,7 @@ function App() {
           <Tokens
             tokens={tokens}
             cellSize={cellSize}
-            moveableTokens={moveableTokens}
+            moveableTokens={isCurrentPlayerCPU ? [] : moveableTokens}
             currentPlayer={currentPlayer}
             onTokenClick={handleTokenClick}
           />
@@ -129,7 +146,7 @@ function App() {
           value={diceValue}
           rolling={diceRolling}
           onRoll={actions.handleRollDice}
-          disabled={phase !== GAME_PHASES.ROLLING}
+          disabled={isDiceDisabled}
           playerColor={currentPlayerColor}
         />
         <p className="game-message" style={{ color: currentPlayerColor }}>

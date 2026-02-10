@@ -1,6 +1,16 @@
+import { PLAYER_NAMES, PLAYER_COLORS } from '../utils/constants';
+import { getPlayerIds } from '../utils/gameLogic';
 import './StartScreen.css';
 
-export default function StartScreen({ playerCount, onPlayerCountChange, onStart }) {
+export default function StartScreen({
+    playerCount,
+    cpuPlayers,
+    onPlayerCountChange,
+    onToggleCpu,
+    onStart,
+}) {
+    const activePlayerIds = getPlayerIds(playerCount);
+
     return (
         <div className="start-screen">
             <div className="start-bg-effects">
@@ -37,12 +47,40 @@ export default function StartScreen({ playerCount, onPlayerCountChange, onStart 
                             </button>
                         ))}
                     </div>
+                </div>
 
-                    <div className="player-preview">
-                        {playerCount >= 1 && <span className="preview-dot red" title="Red" />}
-                        {playerCount >= 3 && <span className="preview-dot green" title="Green" />}
-                        {playerCount >= 2 && <span className="preview-dot yellow" title="Yellow" />}
-                        {playerCount >= 4 && <span className="preview-dot blue" title="Blue" />}
+                {/* Player Type Selection */}
+                <div className="player-type-section">
+                    <h2 className="setup-title">Choose player types</h2>
+                    <div className="player-type-grid">
+                        {activePlayerIds.map((playerId) => {
+                            const isCpu = !!cpuPlayers[playerId];
+                            const colors = PLAYER_COLORS[playerId];
+                            return (
+                                <div
+                                    key={playerId}
+                                    className="player-type-card"
+                                    style={{ '--card-color': colors.main, '--card-glow': colors.glow }}
+                                >
+                                    <div className="ptc-header">
+                                        <span
+                                            className="ptc-dot"
+                                            style={{ background: colors.main }}
+                                        />
+                                        <span className="ptc-name">{PLAYER_NAMES[playerId]}</span>
+                                    </div>
+                                    <button
+                                        className={`type-toggle ${isCpu ? 'cpu' : 'human'}`}
+                                        onClick={() => onToggleCpu(playerId)}
+                                        id={`toggle-cpu-${playerId}`}
+                                        title={isCpu ? 'Switch to Human' : 'Switch to Computer'}
+                                    >
+                                        <span className="toggle-icon">{isCpu ? '🤖' : '👤'}</span>
+                                        <span className="toggle-label">{isCpu ? 'CPU' : 'Human'}</span>
+                                    </button>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
 

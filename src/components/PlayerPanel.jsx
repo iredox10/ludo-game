@@ -1,13 +1,14 @@
 import { PLAYER_COLORS, PLAYER_NAMES, TOKEN_STATE } from '../utils/constants';
 import './PlayerPanel.css';
 
-export default function PlayerPanel({ players, tokens, currentPlayer }) {
+export default function PlayerPanel({ players, tokens, currentPlayer, cpuPlayers = {} }) {
     return (
         <div className="player-panel">
             {players.map((playerId) => {
                 const colors = PLAYER_COLORS[playerId];
                 const playerTokens = tokens[playerId] || [];
                 const isActive = playerId === currentPlayer;
+                const isCpu = !!cpuPlayers[playerId];
                 const finishedCount = playerTokens.filter((t) => t.state === TOKEN_STATE.FINISHED).length;
                 const activeCount = playerTokens.filter((t) => t.state === TOKEN_STATE.ACTIVE).length;
                 const homeCount = playerTokens.filter((t) => t.state === TOKEN_STATE.HOME).length;
@@ -28,7 +29,8 @@ export default function PlayerPanel({ players, tokens, currentPlayer }) {
                         <div className="player-card-header">
                             <div className="player-dot" />
                             <span className="player-name">{PLAYER_NAMES[playerId]}</span>
-                            {isActive && <span className="turn-badge">Playing</span>}
+                            {isCpu && <span className="cpu-badge">🤖</span>}
+                            {isActive && <span className="turn-badge">{isCpu ? 'Thinking' : 'Playing'}</span>}
                         </div>
                         <div className="token-status">
                             {playerTokens.map((token, i) => (

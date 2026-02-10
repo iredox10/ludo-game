@@ -48,6 +48,11 @@
     letter-spacing: 0.5px;
 }
 
+.cpu-badge {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
 .turn-badge {
     margin-left: auto;
     font-size: 10px;

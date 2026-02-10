@@ -88,19 +88,19 @@
 
 /* Logo Section */
 .logo-section {
-    margin-bottom: 48px;
+    margin-bottom: 32px;
 }
 
 .logo-tokens {
     display: flex;
     justify-content: center;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .logo-token {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     animation: tokenBounce 2s ease-in-out infinite;
@@ -139,7 +139,7 @@
 }
 
 .game-title {
-    font-size: 72px;
+    font-size: 60px;
     font-weight: 900;
     letter-spacing: 16px;
     background: linear-gradient(135deg, #E53935, #FDD835, #43A047, #1E88E5);
@@ -165,7 +165,7 @@
 }
 
 .game-tagline {
-    font-size: 16px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.5);
     font-weight: 300;
     letter-spacing: 4px;
@@ -175,27 +175,27 @@
 
 /* Setup Section */
 .setup-section {
-    margin-bottom: 40px;
+    margin-bottom: 28px;
 }
 
 .setup-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .player-buttons {
     display: flex;
-    gap: 16px;
+    gap: 12px;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .player-count-btn {
-    width: 90px;
-    height: 90px;
-    border-radius: 16px;
+    width: 80px;
+    height: 80px;
+    border-radius: 14px;
     border: 2px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(10px);
@@ -224,46 +224,108 @@
 }
 
 .count-number {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 800;
     line-height: 1;
 }
 
 .count-label {
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 500;
 }
 
-.player-preview {
-    display: flex;
+/* Player Type Selection */
+.player-type-section {
+    margin-bottom: 28px;
+}
+
+.player-type-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
-    justify-content: center;
+    max-width: 380px;
+    margin: 0 auto;
 }
 
-.preview-dot {
-    width: 16px;
-    height: 16px;
+.player-type-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+.player-type-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--card-color);
+}
+
+.ptc-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ptc-dot {
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease;
+    flex-shrink: 0;
 }
 
-.preview-dot.red {
-    background: #E53935;
+.ptc-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
 }
 
-.preview-dot.green {
-    background: #43A047;
+.type-toggle {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Outfit', sans-serif;
+    color: rgba(255, 255, 255, 0.7);
 }
 
-.preview-dot.yellow {
-    background: #FDD835;
+.type-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.25);
 }
 
-.preview-dot.blue {
-    background: #1E88E5;
+.type-toggle.cpu {
+    background: rgba(255, 152, 0, 0.15);
+    border-color: rgba(255, 152, 0, 0.3);
+    color: #ffb74d;
+}
+
+.type-toggle.human {
+    background: rgba(76, 175, 80, 0.12);
+    border-color: rgba(76, 175, 80, 0.25);
+    color: #81c784;
+}
+
+.toggle-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.toggle-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 /* Play Button */
