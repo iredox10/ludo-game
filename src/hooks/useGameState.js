@@ -408,6 +408,23 @@ export function useGameState() {
         handleRollDice,
     ]);
 
+    // === Auto-move when only 1 token can move (human players) ===
+    const autoMoveRef = useRef(null);
+    useEffect(() => {
+        if (state.phase !== GAME_PHASES.SELECTING) return;
+        if (isCurrentPlayerCPU) return; // CPU has its own logic
+        if (state.moveableTokens.length !== 1) return;
+
+        // Auto-select the only moveable token after a brief delay
+        autoMoveRef.current = setTimeout(() => {
+            dispatch({ type: 'SELECT_TOKEN', payload: { tokenId: state.moveableTokens[0] } });
+        }, 400);
+
+        return () => {
+            if (autoMoveRef.current) clearTimeout(autoMoveRef.current);
+        };
+    }, [state.phase, state.moveableTokens, isCurrentPlayerCPU]);
+
     // === Step-by-step animation driver ===
     const animTimerRef = useRef(null);
     useEffect(() => {
