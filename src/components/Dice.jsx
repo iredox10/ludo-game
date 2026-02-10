@@ -39,6 +39,7 @@ function DiceFace({ value, className }) {
 export default function Dice({ value, rolling, onRoll, disabled, playerColor }) {
     const [phase, setPhase] = useState('idle'); // 'idle' | 'spinning' | 'landing'
     const [spinDeg, setSpinDeg] = useState({ x: 0, y: 0, z: 0 });
+    const [lastValue, setLastValue] = useState(1); // Remember the last face shown
 
     useEffect(() => {
         if (rolling) {
@@ -50,23 +51,27 @@ export default function Dice({ value, rolling, onRoll, disabled, playerColor }) 
                 z: 360 + Math.random() * 180,
             });
         } else if (value && phase === 'spinning') {
-            // Spin just ended → land
+            // Spin just ended → land on the new value
+            setLastValue(value);
             setPhase('landing');
             const timer = setTimeout(() => setPhase('idle'), 400);
             return () => clearTimeout(timer);
+        } else if (value) {
+            // Value set without spinning (e.g. on load)
+            setLastValue(value);
         }
     }, [rolling, value]);
+
+    // The face to display — use lastValue to avoid flashing face 1
+    const displayValue = value || lastValue;
 
     // Compute cube transform
     const cubeTransform = useMemo(() => {
         if (phase === 'spinning') {
             return `rotateX(${spinDeg.x}deg) rotateY(${spinDeg.y}deg) rotateZ(${spinDeg.z}deg)`;
         }
-        if (value) {
-            return faceRotations[value] || faceRotations[1];
-        }
-        return faceRotations[1];
-    }, [phase, spinDeg, value]);
+        return faceRotations[displayValue] || faceRotations[1];
+    }, [phase, spinDeg, displayValue]);
 
     return (
         <div className="dice-wrapper">
